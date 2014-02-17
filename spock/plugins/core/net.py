@@ -4,6 +4,8 @@ import select
 from spock import utils
 from spock.utils import pl_announce
 from spock.mcp import mcpacket, mcdata
+import crypto
+sys.modules['Crypto'] = crypto
 from Crypto.Cipher import AES
 
 class AESCipher:

@@ -38,15 +38,12 @@ class ClientInfo:
 @pl_announce('ClientInfo')
 class ClientInfoPlugin:
 	def __init__(self, ploader, settings):	
-		self.emit = ploader.requires('Client').emit
+		self.emit = ploader.requires('Event').emit
 		ploader.reg_event_handler(0x01, self.handle01)
-		ploader.reg_event_handler(0x06, self.handle06)
-		ploader.reg_event_handler(0x08, self.handle08)
-		ploader.reg_event_handler(
-			(0x0A, 0x0B, 0x0C, 0x0D), 
-			self.handle_position_update
-		)
-		ploader.reg_event_handler(0xC9, self.handleC9)
+		ploader.reg_event_handler(0x05, self.handle_spawn_position)
+		ploader.reg_event_handler(0x06, self.handle_client_health)
+		ploader.reg_event_handler(0x08, self.handle_position_update)
+		ploader.reg_event_handler(0x38, self.handle_player_list_item)
 		ploader.reg_event_handler(
 			(0xFF, 'SOCKET_ERR', 'SOCKET_HUP'),
 			self.handle_disconnect
@@ -64,13 +61,13 @@ class ClientInfoPlugin:
 		self.emit('cl_login', packet.data)
 
 	#Spawn Position - Update client Spawn Position state
-	def handle06(self, name, packet):
+	def handle_spawn_position(self, name, packet):
 		self.client_info.spawn_position = packet.data
 		self.emit('cl_spawn_update', packet.data)
 
 
 	#Update Health - Update client Health state
-	def handle08(self, name, packet):
+	def handle_client_health(self, name, packet):
 		self.client_info.health = packet.data
 		self.emit('cl_health_update', packet.data)
 
@@ -81,7 +78,7 @@ class ClientInfoPlugin:
 		self.emit('cl_position_update', self.client_info.position)
 
 	#Player List Item - Update PlayerList (not actually a list...)
-	def handleC9(self, name, packet):
+	def handle_player_list_item(self, name, packet):
 		name = packet.data['player_name']
 		if packet.data['online']:
 			self.client_info.player_list[name] = packet.data['ping']
